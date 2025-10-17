@@ -1,0 +1,20 @@
+# Maven / Java
+target/
+*.jar
+*.war
+*.class
+*.log
+
+# Node / React
+node_modules/
+build/
+dist/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
