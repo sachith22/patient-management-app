@@ -141,6 +141,31 @@ API: http://localhost:8080/patient
 #### 5. Delete patient
       curl -X DELETE http://localhost:8080/patient/1
 
+## API Documentation (Swagger / OpenAPI)
+
+This project uses Springdoc OpenAPI
+to generate interactive API documentation for all REST endpoints.
+
+### Swagger UI
+
+After running the application, you can access the Swagger UI at:
+
+http://localhost:8080/swagger-ui.html
+
+This interface allows you to:
+
+* Explore all available endpoints (GET, POST, PUT, DELETE)
+
+* View request/response models
+
+* Execute API calls directly from the browser
+
+### OpenAPI JSON Spec
+
+For machine-readable API documentation (used by tools like Postman or API clients):
+
+http://localhost:8080/v3/api-docs
+
 ## Features
 
 * CRUD operations for Patients
@@ -148,3 +173,4 @@ API: http://localhost:8080/patient
 * Pagination support
 * Input validation for forms
 * Fancy confirmation dialog for delete action
+* API Documentation
