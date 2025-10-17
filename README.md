@@ -40,7 +40,26 @@ The application allows users to manage patients (add, edit, delete, and view), w
    
 ## Setup Instructions
 
-### 1️. Backend Setup
+### 1. Setup Database (Windows)
+
+1. Create the database:
+      ```bash
+      psql -U postgres -c "CREATE DATABASE patientdb;"
+
+Update backend/src/main/resources/application.properties or set environment variables accordingly.
+
+### 2. Database Configuration
+
+The backend reads DB settings from:
+backend/src/main/resources/application.properties
+
+Default values (change as needed):
+
+      spring.datasource.url=jdbc:postgresql://localhost:5432/patientdb
+      spring.datasource.username=postgres
+      spring.datasource.password=postgres
+
+### 3. Backend Setup
 
 1. Navigate to the backend directory:
    ```bash
@@ -50,7 +69,7 @@ The application allows users to manage patients (add, edit, delete, and view), w
    ```bash
    mvn clean package
 
-### 2️. Frontend Setup
+### 4. Frontend Setup
 
 1. Navigate to the frontend directory:
    ```bash
@@ -60,7 +79,7 @@ The application allows users to manage patients (add, edit, delete, and view), w
    ```bash
    npm install
 
-### 3. Integrate Frontend with Backend
+### 5. Integrate Frontend with Backend
 
 To serve React app from Spring Boot (single deployable JAR):
 
@@ -84,7 +103,15 @@ Frontend: http://localhost:8080/dashboard
 
 API: http://localhost:8080/patient
 
-### 4. API Endpoints
+## API Endpoints
+
+| Method |    Endpoint    |        Description |
+| :--- |:--------------:|-------------------:|
+| GET |    /patient    |   Get all patients |
+| GET | /patient/{id}  |  Get patient by ID |
+| POST |    /patient    |  Add a new patient |
+| PUT | /patient/{id}  |     Update patient |
+| DELETE | /patient/{id}  |     Delete patient |
 
 #### 1. Get all patients
       curl -X GET http://localhost:8080/patient
@@ -120,19 +147,10 @@ API: http://localhost:8080/patient
 #### 5. Delete patient
       curl -X DELETE http://localhost:8080/patient/1
 
-### 5. Features
+## Features
 
 * CRUD operations for Patients
 * Inline editing and saving directly to the database
 * Pagination support
 * Input validation for forms
 * Fancy confirmation dialog for delete action
-
-### 6. API Endpoints
-
-| Method | Endpoint | Description |
-| :--- | :---: | ---: |
-| GET | /patient | Get all patients |
-| POST | /patient | Add a new patient |
-| PUT | /patient/{id} | Update patient |
-| DELETE | /patient/{id} | Delete patient |
