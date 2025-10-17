@@ -61,22 +61,16 @@ Default values (change as needed):
 
 ### 3. Backend Setup
 
-1. Navigate to the backend directory:
+1. Navigate to the backend directory & Build the Spring Boot JAR:
    ```bash
    cd backend
-   
-2. Build the Spring Boot JAR:
-   ```bash
    mvn clean package
 
 ### 4. Frontend Setup
 
-1. Navigate to the frontend directory:
+1. Navigate to the frontend directory & Install dependencies:
    ```bash
    cd frontend
-
-2. Install dependencies:
-   ```bash
    npm install
 
 ### 5. Integrate Frontend with Backend

@@ -1,5 +1,6 @@
 .container {
   max-width: 1100px;
+  padding:0x !important;
 }
 
 input.form-control {
@@ -11,43 +12,27 @@ input.form-control {
 }
 
 .table {
-  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+}
+
+.table td, .table th {
+  background-color: #fff;
+  padding: 8px;
+  vertical-align: middle;
+}
+
+.table-responsive {
+  overflow-x: auto;
   width: 100%;
 }
 
-/* Keep all inputs compact and aligned */
+.table td .d-flex {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
 .table input {
   width: 100%;
-  height: 30px;
-  padding: 2px 6px;
-  font-size: 14px;
-  box-sizing: border-box;
 }
-
-/* Ensure actions cell doesn’t expand vertically */
-.table td:last-child {
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.table td {
-  vertical-align: middle;
-}
-
-/* Align action buttons in one row */
-.table td .btn {
-  margin-right: 5px;
-}
-
-/* Optional: prevent row height jump when entering edit mode */
-.table tr {
-  vertical-align: middle;
-  height: 50px;
-}
-
-.table th, .table td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
