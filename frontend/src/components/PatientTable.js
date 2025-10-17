@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 
-function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
+function PatientTable({
+  patients,
+  onEdit,
+  onDelete,
+  onUpdate,
+  currentPage,
+  totalPages,
+  fetchPatients,
+  searchTerm,
+  setSearchTerm,
+  pageSize,
+}) {
   const [editRow, setEditRow] = useState(null);
   const [editData, setEditData] = useState({});
   const [errors, setErrors] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPatients, setFilteredPatients] = useState(patients);
   const [viewPatient, setViewPatient] = useState(null);
 
-  useEffect(() => {
-    const filtered = patients.filter(p =>
-      Object.values(p).some(
-        val => val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    setFilteredPatients(filtered);
-    setCurrentPage(1);
-  }, [searchTerm, patients]);
-
+  // Start editing
   const startEdit = (p) => {
     setEditRow(p.id);
     setEditData({ ...p });
@@ -38,24 +37,17 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
     if (!editData.city?.trim()) errs.city = 'City is required';
     if (!editData.state?.trim()) errs.state = 'State is required';
     if (!editData.zipCode?.trim()) errs.zipCode = 'Zip Code is required';
-    if (!editData.phoneNumber?.trim()) {
-      errs.phoneNumber = 'Phone number is required';
-    } else if (!/^\+?\d{7,15}$/.test(editData.phoneNumber)) {
-      errs.phoneNumber = 'Invalid phone number';
-    }
-    if (!editData.email?.trim()) {
-      errs.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editData.email)) {
-      errs.email = 'Invalid email address';
-    }
-
+    if (!editData.phoneNumber?.trim()) errs.phoneNumber = 'Phone number is required';
+    else if (!/^\+?\d{7,15}$/.test(editData.phoneNumber)) errs.phoneNumber = 'Invalid phone number';
+    if (!editData.email?.trim()) errs.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editData.email)) errs.email = 'Invalid email';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (validate()) {
-      onUpdate(editData);
+      await onUpdate(editData);
       setEditRow(null);
     }
   };
@@ -68,21 +60,14 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
     });
-
     if (result.isConfirmed) {
-      onDelete(id);
-      Swal.fire('Deleted!', 'Patient has been deleted.', 'success');
+      await onDelete(id);
     }
   };
 
-  const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentPatients = filteredPatients.slice(startIndex, startIndex + rowsPerPage);
-
   return (
-    <div className="container">
+    <div>
       <div className="mb-3">
         <input
           type="text"
@@ -93,7 +78,6 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
         />
       </div>
 
-      {/* Table wrapper with horizontal and vertical scroll */}
       <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
         <div className="table-responsive">
           <table className="table table-striped table-hover table-sm">
@@ -104,30 +88,31 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
                 <th>Address</th>
                 <th>City</th>
                 <th>State</th>
-                <th>Zip Code</th>
+                <th>Zip</th>
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {currentPatients.map((p) => (
+              {patients.map((p) => (
                 <tr key={p.id}>
                   {editRow === p.id ? (
                     <>
-                      <td><input name="firstName" value={editData.firstName || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="lastName" value={editData.lastName || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="address" value={editData.address || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="city" value={editData.city || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="state" value={editData.state || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="zipCode" value={editData.zipCode || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="phoneNumber" value={editData.phoneNumber || ''} onChange={handleChange} className="form-control" /></td>
-                      <td><input name="email" value={editData.email || ''} onChange={handleChange} className="form-control" /></td>
+                      {['firstName','lastName','address','city','state','zipCode','phoneNumber','email'].map((f) => (
+                        <td key={f}>
+                          <input
+                            name={f}
+                            value={editData[f] || ''}
+                            onChange={handleChange}
+                            className={`form-control ${errors[f] ? 'is-invalid' : ''}`}
+                          />
+                          {errors[f] && <div className="invalid-feedback">{errors[f]}</div>}
+                        </td>
+                      ))}
                       <td>
-                        <div className="d-flex flex-nowrap">
-                          <button className="btn btn-success btn-sm me-1" onClick={saveEdit}>Save</button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => setEditRow(null)}>Cancel</button>
-                        </div>
+                        <button className="btn btn-success btn-sm me-1" onClick={saveEdit}>Save</button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setEditRow(null)}>Cancel</button>
                       </td>
                     </>
                   ) : (
@@ -141,9 +126,9 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
                       <td>{p.phoneNumber}</td>
                       <td>{p.email}</td>
                       <td>
-                        <div className="d-flex flex-nowrap">
-                          <button className="btn btn-info btn-sm me-1" onClick={() => setViewPatient(p)}>View</button>
-                          <button className="btn btn-warning btn-sm me-1" onClick={() => startEdit(p)}>Edit</button>
+                        <div className="d-flex gap-1">
+                          <button className="btn btn-info btn-sm" onClick={() => setViewPatient(p)}>View</button>
+                          <button className="btn btn-warning btn-sm" onClick={() => startEdit(p)}>Edit</button>
                           <button className="btn btn-danger btn-sm" onClick={() => confirmDelete(p.id)}>Delete</button>
                         </div>
                       </td>
@@ -158,43 +143,81 @@ function PatientTable({ patients, onUpdate, onDelete, rowsPerPage = 5 }) {
 
       {/* Pagination */}
       <nav>
-        <ul className="pagination mt-2">
-          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-            <button className="page-link" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>Previous</button>
+        <ul className="pagination justify-content-center">
+          <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+            <button className="page-link" onClick={() => fetchPatients(currentPage - 1, searchTerm)}>Previous</button>
           </li>
           {[...Array(totalPages)].map((_, i) => (
-            <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-              <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+            <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+              <button className="page-link" onClick={() => fetchPatients(i, searchTerm)}>{i + 1}</button>
             </li>
           ))}
-          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-            <button className="page-link" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>Next</button>
+          <li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
+            <button className="page-link" onClick={() => fetchPatients(currentPage + 1, searchTerm)}>Next</button>
           </li>
         </ul>
       </nav>
-
       {/* Modal */}
       {viewPatient && (
-        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
+        <div
+          className="modal fade show"
+          style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          tabIndex="-1"
+        >
+          <div className="modal-dialog modal-dialog-centered modal-md">
+            <div className="modal-content shadow-lg rounded-3">
+
+              {/* Modal Header */}
+              <div className="modal-header bg-primary text-white">
                 <h5 className="modal-title">Patient Details</h5>
-                <button type="button" className="btn-close" onClick={() => setViewPatient(null)}></button>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setViewPatient(null)}
+                ></button>
               </div>
+
+              {/* Modal Body */}
               <div className="modal-body">
-                <p><strong>First Name:</strong> {viewPatient.firstName}</p>
-                <p><strong>Last Name:</strong> {viewPatient.lastName}</p>
-                <p><strong>Address:</strong> {viewPatient.address}</p>
-                <p><strong>City:</strong> {viewPatient.city}</p>
-                <p><strong>State:</strong> {viewPatient.state}</p>
-                <p><strong>Zip Code:</strong> {viewPatient.zipCode}</p>
-                <p><strong>Phone:</strong> {viewPatient.phoneNumber}</p>
-                <p><strong>Email:</strong> {viewPatient.email}</p>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item">
+                    <strong>First Name:</strong> {viewPatient.firstName}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Last Name:</strong> {viewPatient.lastName}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Address:</strong> {viewPatient.address}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>City:</strong> {viewPatient.city}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>State:</strong> {viewPatient.state}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Zip Code:</strong> {viewPatient.zipCode}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Phone:</strong> {viewPatient.phoneNumber}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Email:</strong> {viewPatient.email}
+                  </li>
+                </ul>
               </div>
+
+              {/* Modal Footer */}
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setViewPatient(null)}>Close</button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setViewPatient(null)}
+                >
+                  Close
+                </button>
               </div>
+
             </div>
           </div>
         </div>

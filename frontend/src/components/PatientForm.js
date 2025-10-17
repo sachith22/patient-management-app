@@ -27,6 +27,7 @@ function PatientForm({ onSave, selectedPatient }) {
       case "address":
       case "city":
       case "state":
+      case "zipCode":
         if (!value.trim()) msg = "This field is required.";
         break;
 
@@ -37,6 +38,7 @@ function PatientForm({ onSave, selectedPatient }) {
         break;
 
       case "phoneNumber":
+        if (!value.trim()) msg = "This field is required."
         if (value && !/^[0-9+\-() ]{6,20}$/.test(value))
           msg = "Invalid phone number.";
         break;

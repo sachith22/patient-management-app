@@ -1,23 +1,44 @@
 package com.example.patient.service;
 
+import com.example.patient.dto.PatientDTO;
+import com.example.patient.dto.PatientMapper;
 import com.example.patient.entity.Patient;
 import com.example.patient.exception.ResourceNotFoundException;
 import com.example.patient.repository.PatientRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PatientService {
 
     private final PatientRepository repo;
 
-    public PatientService(PatientRepository repo) {
-        this.repo = repo;
-    }
-
     public List<Patient> findAll() {
         return repo.findAll();
+    }
+
+    public Page<PatientDTO> getAllPatients(Pageable pageable) {
+        return repo.findAll(pageable)
+                .map(this::convertToDTO);
+    }
+
+    private PatientDTO convertToDTO(Patient patient) {
+        return new PatientDTO(
+                patient.getId(),
+                patient.getFirstName(),
+                patient.getLastName(),
+                patient.getAddress(),
+                patient.getCity(),
+                patient.getState(),
+                patient.getZipCode(),
+                patient.getPhoneNumber(),
+                patient.getEmail()
+        );
     }
 
     public Patient findById(Long id) {
@@ -45,5 +66,15 @@ public class PatientService {
     public void delete(Long id) {
         Patient existing = findById(id);
         repo.delete(existing);
+    }
+
+    public long countAllPatients() {
+        return repo.count();
+    }
+
+    public Page<PatientDTO> searchPatients(String search, Pageable pageable) {
+        return repo.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                        search, search, pageable)
+                .map(PatientMapper::toDTO);
     }
 }
